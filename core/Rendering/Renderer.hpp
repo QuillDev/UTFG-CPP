@@ -8,19 +8,23 @@
 #include <SFML/Graphics.hpp>
 #include "AssetLoader.hpp"
 
-class Renderer {
+using namespace sf;
 
+class Renderer {
 private:
     AssetLoader *assetLoader = new AssetLoader();
     Sprite *sprite;
     Sprite *sprite2;
     Sprite *sprite3;
+    tmx::Map *map = new tmx::Map();
 
 public:
     Renderer(){
         sprite = assetLoader->get_sprite("grass.png");
-        sprite2 = assetLoader->get_sprite("grass.png", Vector2<float>(32.0f, 0.0f));
-        sprite3 = assetLoader->get_sprite("fakesprite.png", Vector2<float>(64.0f, 0.0f));
+        sprite2 = assetLoader->get_sprite("grass.png", sf::Vector2<float>(32.0f, 0.0f));
+        sprite3 = assetLoader->get_sprite("fakesprite.png", sf::Vector2<float>(64.0f, 0.0f));
+        assetLoader->load_map(map, "dev.tmx");
+        std::cout << map->getLayers().at(0)->getName() << std::endl;
     }
     //The window to render to
     void render(sf::RenderWindow *window)

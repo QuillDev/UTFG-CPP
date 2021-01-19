@@ -6,17 +6,23 @@
 #define TESTPROJ_ASSETLOADER_HPP
 
 #include <iostream>
-#include "boost/filesystem.hpp"
+#include <utility>
+#include <boost/filesystem.hpp>
+#include <boost/fusion/container/map.hpp>
+#include <string>
+#include <tmxlite/Map.hpp>
+#include <tmxlite/Layer.hpp>
+#include <tmxlite/TileLayer.hpp>
+#include <tmxlite/ObjectGroup.hpp>
 
-using namespace std;
-using namespace sf;
 using namespace boost::filesystem;
 
 class AssetLoader {
 
 private:
-    map<string, Texture> *textureMap = new map<string, Texture>;
-    Texture *debug_texture = new Texture();
+    std::map<std::string, sf::Texture> *textureMap = new std::map<std::string, sf::Texture>;
+
+    sf::Texture *debug_texture = new sf::Texture();
 public:
     AssetLoader()
     {
@@ -29,9 +35,9 @@ public:
      * @param query to find the texture with
      * @return the sprite if it exists
      */
-    Sprite * get_sprite(string query)
+    sf::Sprite * get_sprite(const std::string& query)
     {
-        return get_sprite(query, Vector2<float>(0.0f,0.0f));
+        return get_sprite(query, sf::Vector2<float>(0.0f,0.0f));
     }
 
     /**
@@ -39,10 +45,10 @@ public:
      * @param query to find the texture with
      * @return the sprite if it exists
      */
-    Sprite * get_sprite(string query, Vector2<float> position)
+    sf::Sprite * get_sprite(const std::string& query, sf::Vector2<float> position)
     {
 
-        Sprite *sprite = new Sprite(); //create the sprite
+        auto *sprite = new sf::Sprite(); //create the sprite
 
         //try to set the image of the sprite
         try {
@@ -51,7 +57,7 @@ public:
             sprite->setTexture(textureMap->at(query));
 
         }
-        catch (out_of_range ignored)
+        catch (const std::exception& e)
         {
             sprite->setTexture(*debug_texture); //if the texture fails to be retrieved, use the debug texture
         }
@@ -61,6 +67,18 @@ public:
         return sprite;
     }
 
+    /**
+     * try to load the given map
+     * @param map to load
+     * @param query to check for
+     */
+    void load_map(tmx::Map *map, const std::string& query)
+    {
+        if(!map->load("./Assets/Maps/" + query))
+        {
+            std::cout << "Failed to load the requested map " << query << std::endl;
+        }
+    }
 private:
     /**
      * Loads sprites dynamically going down the file tree automatically
@@ -78,10 +96,10 @@ private:
      * The code would go down path 1 and call load(string path) on any subdirectories it finds, filling the tree
      * and finding all available texture files in the assets directory (including all subdirectories)
      */
-    void load(string pathString) const
+    void load(std::string pathString) const
     {
 
-        cout << "Loading Path @ " << pathString << endl; //log we started loading the given path
+        std::cout << "Loading Path @ " << pathString << std::endl; //log we started loading the given path
 
         //Get the working directory
         path directory (pathString);
@@ -99,28 +117,19 @@ private:
             {
                 //Get details about the file
                 path filePath = itr->path(); // Get the path
-                string extension = filePath.extension().string(); // Get the file extension as a string
+                std::string extension = filePath.extension().string(); // Get the file extension as a string
 
-                //if the file extension is not a png, skip it
                 if(extension == ".png")
                 {
-                    // Setup texture stuff for adding to the map
-                    Texture *texture = new Texture(); // Create the texture to load the sprite into
-                    string fileName = filePath.filename().string(); // Get the file name from the path
-
-                    //if we failed to load the texture, log it and continue
-                    if(!texture->loadFromFile(filePath.string()))
-                    {
-                        cout << "Failed to load file: " << filePath << endl;
-                        continue;
-                    }
-
-                    //Add the texture to the map and log it
-                    textureMap->insert(make_pair(fileName, *texture));
-                    cout << "Loaded sprite with key: " << fileName << endl; //log that we loaded the sprite
+                    load_texture(filePath);
                     continue;
                 }
 
+                //if we did not find an appropriate loader
+                else
+                {
+                    std::cout << "Did not find a loader for type " << extension << std::endl;
+                }
 
             }
             else if(is_directory(curPath))
@@ -128,6 +137,28 @@ private:
                 load(curPath.string());
             }
         }
+    }
+
+    /**
+     * Load the texture at the given path
+     * @param filePath to load the texture from
+     */
+    void load_texture(const path& filePath) const
+    {
+        // Setup texture stuff for adding to the map
+        auto *texture = new sf::Texture(); // Create the texture to load the sprite into
+        auto fileName = filePath.filename().string(); // Get the file name from the path
+
+        //if we failed to load the texture, log it and continue
+        if(!texture->loadFromFile(filePath.string()))
+        {
+            std::cout << "Failed to load file: " << filePath << std::endl;
+            return;
+        }
+
+        //Add the texture to the map and log it
+        textureMap->insert(make_pair(fileName, *texture));
+        std::cout << "Loaded Sprite: KEY=" << fileName << std::endl; //log that we loaded the sprite
     }
 };
 #endif //TESTPROJ_ASSETLOADER_HPP
