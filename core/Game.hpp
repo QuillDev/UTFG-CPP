@@ -10,13 +10,14 @@
 #include <SFML/Graphics.hpp>
 #include "Rendering/Renderer.hpp"
 
+using namespace std;
+using namespace sf;
+
 class Game {
-
-
 public:
 
-    sf::RenderWindow *window = new sf::RenderWindow(); // window to be rendering to
-    sf::Clock *clock = new sf::Clock(); //clock for getting delta time
+    RenderWindow *window = new RenderWindow(); // window to be rendering to
+    Clock *clock = new Clock(); //clock for getting delta time
 
     Renderer *renderer = new Renderer(); //game renderer
 
@@ -29,7 +30,8 @@ public:
     Game(int width, int height, const std::string& name)
     {
         //create the window
-        this->window->create(sf::VideoMode(width, height), name);
+        this->window->create(VideoMode(width, height), name);
+        this->window->setFramerateLimit(300);
     }
 
     /**
@@ -39,14 +41,14 @@ public:
         //Loop while the window is open
         while (window->isOpen()){
 
-            sf::Event event{}; //event var for storing a polled event
+            Event event{}; //event var for storing a polled event
 
             //poll the window for events
             while(window->pollEvent(event))
             {
 
                 //if we get a closed event, close the game
-                if(event.type == sf::Event::Closed)
+                if(event.type == Event::Closed)
                 {
                     window->close(); //close the game window
                 }
