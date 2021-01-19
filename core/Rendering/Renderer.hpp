@@ -11,10 +11,11 @@
 class Renderer {
 
 private:
-    AssetLoader *assetloader= new AssetLoader();
-
+    AssetLoader *assetLoader = new AssetLoader();
+    Sprite sprite;
 public:
     Renderer(){
+        sprite = assetLoader->get_sprite("grass.png");
     }
     //The window to render to
     void render(sf::RenderWindow *window)
@@ -23,6 +24,7 @@ public:
         //Rendering loop
         window->clear(sf::Color(120, 0, 120)); //clear the window using the given color
 
+        window->draw(sprite);
         window->display(); //display the window with updates
     }
 };
